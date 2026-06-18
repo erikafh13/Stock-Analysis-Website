@@ -2,7 +2,6 @@
   "name": "stock-analysis-vue",
   "version": "1.0.0",
   "private": true,
-  "description": "Aplikasi Analisis Stock dan ABC — dikonversi dari Streamlit ke Vue 3",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
@@ -15,7 +14,8 @@
     "xlsx": "^0.18.5",
     "chart.js": "^4.4.0",
     "vue-chartjs": "^5.3.0",
-    "@vueuse/core": "^10.9.0"
+    "@vueuse/core": "^10.9.0",
+    "googleapis": "^140.0.0"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.0",
