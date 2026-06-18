@@ -1,14 +1,25 @@
-// api/drive/list.js
-import { google } from 'googleapis'
+const { google } = require('googleapis')
 
-export default async function handler(req, res) {
-  // CORS headers
+module.exports = async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Origin', '*')
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS')
   if (req.method === 'OPTIONS') return res.status(200).end()
 
+  if (!process.env.GOOGLE_CREDENTIALS) {
+    return res.status(500).json({ error: 'GOOGLE_CREDENTIALS tidak ditemukan' })
+  }
+
+  let credentials
   try {
-    const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS)
+    credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS)
+    if (credentials.private_key) {
+      credentials.private_key = credentials.private_key.replace(/\\n/g, '\n')
+    }
+  } catch (e) {
+    return res.status(500).json({ error: `JSON parse error: ${e.message}` })
+  }
+
+  try {
     const auth = new google.auth.GoogleAuth({
       credentials,
       scopes: ['https://www.googleapis.com/auth/drive.readonly'],
@@ -26,7 +37,7 @@ export default async function handler(req, res) {
 
     res.status(200).json(resp.data.files || [])
   } catch (e) {
-    console.error(e)
+    console.error('Drive API error:', e.message)
     res.status(500).json({ error: e.message })
   }
 }
