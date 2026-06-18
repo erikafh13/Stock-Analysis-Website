@@ -1,5 +1,5 @@
 // src/utils/gdrive.js
-const BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001'
+const BASE = ''
 
 export const FOLDER_PENJUALAN      = '1Okgw8qHVM8HyBwnTUFHbmYkNKqCcswNZ'
 export const FOLDER_PRODUK         = '1UdGbFzZ2Wv83YZLNwdU-rgY-LXlczsFv'
