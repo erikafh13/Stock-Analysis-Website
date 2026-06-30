@@ -1,134 +1,54 @@
-# Stock Analysis — Vue 3
+# Stock Analysis & ABC — Vue 3
 
-Aplikasi analisis stock dan ABC dikonversi dari Streamlit ke **Vue 3 + Vite**.  
-Semua kalkulasi berjalan di browser (client-side), tidak ada server diperlukan.
+Konversi penuh dari aplikasi Streamlit "Analisis Stock dan ABC" ke Vue 3 + Vite,
+dengan backend Google Drive sebagai Vercel Serverless Functions.
 
----
-
-## 🚀 Quick Start
-
-```bash
-# 1. Install dependencies
-npm install
-
-# 2. Jalankan development server
-npm run dev
-
-# 3. Build untuk production
-npm run build
-```
-
-Buka `http://localhost:5173` setelah `npm run dev`.
-
----
-
-## 📁 Struktur Proyek
+## Struktur
 
 ```
 stock-analysis-vue/
-├── index.html
-├── package.json
+├── api/drive/           # Serverless functions (list & download dari Google Drive)
+├── src/
+│   ├── components/      # CityExpanderTable, PivotTable, SimpleBarChart
+│   ├── views/            # 6 halaman: InputData, StockAnalysis(V1/V2), StockDonor,
+│   │                      NewProductAnalysis, AbcAnalysisV3
+│   ├── stores/            # Pinia store (pengganti st.session_state)
+│   ├── utils/             # analysis.js (semua logika kalkulasi), gdrive.js, fileReader.js
+│   ├── router/
+│   ├── App.vue            # Sidebar + layout utama
+│   └── main.js
+├── vercel.json
 ├── vite.config.js
-└── src/
-    ├── main.js               # Entry point
-    ├── App.vue               # Layout + sidebar navigasi
-    ├── router/
-    │   └── index.js          # Vue Router (hash mode)
-    ├── stores/
-    │   └── dataStore.js      # Pinia store (pengganti session_state Streamlit)
-    ├── utils/
-    │   ├── analysis.js       # Semua logika kalkulasi (port dari analysis.py)
-    │   └── fileReader.js     # Baca file Excel/CSV di browser (port dari gdrive.py)
-    ├── components/
-    │   └── DataTable.vue     # Tabel reusable dengan sort, filter, export
-    ├── views/
-    │   ├── InputData.vue         # Halaman upload file
-    │   ├── StockAnalysis.vue     # Hasil Analisa Stock V1
-    │   ├── StockAnalysisV2.vue   # Hasil Analisa Stock V2
-    │   ├── StockDonor.vue        # Analisis Donor Stock
-    │   ├── NewProductAnalysis.vue# Analisis Produk Baru
-    │   └── AbcAnalysisV3.vue     # Analisis ABC V3 (Platform)
-    └── assets/
-        └── main.css          # Global styles
+└── package.json
 ```
 
----
-
-## 📥 Format File
-
-### Data Penjualan (`.xlsx` atau `.csv`)
-Kolom yang diperlukan:
-- `No. Faktur`, `Tgl Faktur`, `No. Barang`, `Nama Pelanggan`, `Dept.`, `Qty`
-
-### Produk Referensi (`.xlsx`)
-- Sheet: **"Sheet1 (2)"**, mulai baris ke-7
-- Kolom: `No. Barang`, `BRAND Barang`, `Kategori Barang`, `Nama Barang`
-
-### Data Stock (`.xlsx`)
-- Sheet: **"Sheet1"**, mulai baris ke-10
-- Kolom gudang: `A - ITC`, `AT - TRANSIT ITC`, `B`, `BT - TRANSIT JKT`, dll.
-- Nama file sebaiknya mengandung tanggal format `ddmmyyyy` (contoh: `stock_01052025.xlsx`)
-
-### File Items — Produk Baru (`.xlsx`)
-- Kolom: `No. Barang`, `Nama Barang`, `BRAND Barang`, `Kategori Barang`
-
----
-
-## 🗺️ Alur Penggunaan
-
-1. **Input Data** → Upload ketiga file (Penjualan + Produk Ref + Stock)
-2. **Hasil Analisa Stock** → Set tanggal → Jalankan analisis V1
-3. **Hasil Analisa Stock V2** → Set tanggal → Jalankan analisis V2 *(wajib sebelum halaman 4 & 5)*
-4. **Analisis Donor Stock** → Klik hitung (butuh hasil V2)
-5. **Analisis Produk Baru** → Upload file items → Hitung (butuh hasil V2)
-6. **Analisis ABC V3** → Set tanggal → Jalankan (butuh Penjualan + Produk Ref)
-
----
-
-## 🌐 Deploy ke GitHub Pages
+## Setup Lokal
 
 ```bash
-# 1. Build
-npm run build
-
-# 2. Install gh-pages (sekali saja)
-npm install -D gh-pages
-
-# 3. Deploy folder dist/
-npx gh-pages -d dist
+npm install
+npm install -g vercel   # sekali saja
+vercel login
+vercel dev               # menjalankan frontend + serverless functions sekaligus
 ```
 
-Atau gunakan GitHub Actions — lihat `.github/workflows/deploy.yml` jika tersedia.
+Buat `.env.local` (tidak ikut di-push) berisi:
+```
+GOOGLE_CREDENTIALS={"type":"service_account", ...isi lengkap JSON service account...}
+```
 
----
+## Deploy ke Vercel
 
-## 🔄 Perbedaan dengan Versi Streamlit
+1. Push repo ini ke GitHub.
+2. Import project di [vercel.com](https://vercel.com).
+3. Di Environment Variables, tambahkan `GOOGLE_CREDENTIALS` (paste seluruh isi JSON, boleh multiline).
+4. Deploy.
+5. Share folder Google Drive (Penjualan/Produk/Stock) ke email `client_email` yang ada di JSON credential, dengan akses Viewer.
 
-| Fitur | Streamlit | Vue 3 |
-|---|---|---|
-| Runtime | Python server | Browser (JS) |
-| Data storage | `st.session_state` | Pinia store |
-| File input | Google Drive | Upload lokal |
-| Export | `st.download_button` | SheetJS (XLSX) |
-| Styling | Streamlit theme | CSS custom |
-| Deploy | Streamlit Cloud | Static hosting / GitHub Pages |
+## Halaman
 
-> **Catatan:** Koneksi Google Drive dihapus karena Vue berjalan sebagai static app.  
-> Jika diperlukan integrasi GDrive, tambahkan backend API (FastAPI / Express) sebagai proxy.
-
----
-
-## 🛠️ Tech Stack
-
-- [Vue 3](https://vuejs.org/) + Composition API
-- [Vite 5](https://vitejs.dev/) — build tool
-- [Pinia](https://pinia.vuejs.org/) — state management
-- [Vue Router 4](https://router.vuejs.org/) — routing
-- [SheetJS (xlsx)](https://sheetjs.com/) — baca/tulis Excel di browser
-- [Chart.js](https://www.chartjs.org/) + [vue-chartjs](https://vue-chartjs.org/) — grafik
-
----
-
-## 📝 Lisensi
-
-Internal use — PT [Nama Perusahaan]
+1. **Input Data** — pilih sumber Google Drive atau upload file lokal.
+2. **Hasil Analisa Stock** — WMA 90 hari, klasifikasi ABC Log-Benchmark, Min/Max/Add Stock, Suggested PO proporsional.
+3. **Hasil Analisa Stock V2** — 3 skenario distribusi PO (KURANG/TERBATAS/OVER) berbasis urgency.
+4. **Analisis Donor Stock** — distribusi lateral antar cabang dengan aturan kirim & prioritas jarak yang bisa diatur.
+5. **Analisis Produk Baru** — identifikasi SKU baru dan proyeksi kebutuhan stok awal dari produk serupa.
+6. **Analisis ABC V3 (Platform)** — ABC Log-Benchmark dipecah per platform Online/Offline.
